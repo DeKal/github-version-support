@@ -11,15 +11,12 @@ const MAX_LINES = core.getInput("MAX_LINES");
 Toolkit.run(
   async (tools) => {
     try {
-      await createNewVersion()
-      await commitVersion()
+      await createNewVersion();
+      await commitVersion();
       tools.exit.success("Update version sucessfully.");
     } catch (err) {
-      return tools.exit.failure(
-        `Couldn't update version for this repository.`
-      );
+      return tools.exit.failure(`Couldn't update version for this repository.`);
     }
-    
   },
   {
     event: ["schedule", "workflow_dispatch"],

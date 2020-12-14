@@ -1,107 +1,107 @@
-const chalk = require('chalk')
-const { dots } = require('cli-spinners')
-const logUpdate = require('log-update')
-const { exec } = require('child-process-promise')
-const commandLineArgs = require('command-line-args')
-const commandLineUsage = require('command-line-usage')
-const figlet = require('figlet')
-const semver = require('semver')
-const { readJson } = require('fs-extra')
-const path = require('path')
+const chalk = require("chalk");
+const { dots } = require("cli-spinners");
+const logUpdate = require("log-update");
+const { exec } = require("child-process-promise");
+const commandLineArgs = require("command-line-args");
+const commandLineUsage = require("command-line-usage");
+const figlet = require("figlet");
+const semver = require("semver");
+const { readJson } = require("fs-extra");
+const path = require("path");
 
-const RELEASE_SCRIPT_PATH = __dirname
-const PACKAGE_PATH = 'package.json'
+const RELEASE_SCRIPT_PATH = __dirname;
+const PACKAGE_PATH = "package.json";
 
-const execRead = async (command, options = { cwd: '.' }) => {
-  const { stdout } = await exec(command, options)
+const execRead = async (command, options = { cwd: "." }) => {
+  const { stdout } = await exec(command, options);
 
-  return stdout.trim()
-}
+  return stdout.trim();
+};
 
-const logPromise = async (promise, text, completedLabel = '') => {
-  const { frames, interval } = dots
+const logPromise = async (promise, text, completedLabel = "") => {
+  const { frames, interval } = dots;
 
-  let index = 0
-  let intervalId
+  let index = 0;
+  let intervalId;
 
   if (!process.env.CI) {
     intervalId = setInterval(() => {
-      index = ++index % frames.length
+      index = ++index % frames.length;
       logUpdate(
         `${chalk.yellow(frames[index])} ${text} ${chalk.gray(
-          '- this may take a few seconds'
+          "- this may take a few seconds"
         )}`
-      )
-    }, interval)
+      );
+    }, interval);
   }
 
   try {
-    const returnValue = await promise
+    const returnValue = await promise;
 
-    clearInterval(intervalId)
+    clearInterval(intervalId);
 
-    logUpdate(`${chalk.green('✓')} ${text} ${chalk.gray(completedLabel)}`)
-    logUpdate.done()
+    logUpdate(`${chalk.green("✓")} ${text} ${chalk.gray(completedLabel)}`);
+    logUpdate.done();
 
-    return returnValue
+    return returnValue;
   } catch (error) {
-    console.warn(error.stdout || error)
-    throw error
+    console.warn(error.stdout || error);
+    throw error;
   }
-}
+};
 
 const toEnv = (envVars) =>
   Object.keys(envVars)
     // filter invalid keys
     .filter((key) => envVars[key])
     .map((key) => `${key}="${envVars[key]}"`)
-    .join(' ')
+    .join(" ");
 
 const getUsage = (paramDefinitions) =>
   commandLineUsage([
     {
-      content: chalk.green.bold(figlet.textSync('Lite', { font: 'Graffiti' })),
-      raw: true
+      content: chalk.green.bold(figlet.textSync("Lite", { font: "Graffiti" })),
+      raw: true,
     },
     {
-      content: 'Automated release script.'
+      content: "Automated release script.",
     },
     {
-      header: 'Options',
-      optionList: paramDefinitions
+      header: "Options",
+      optionList: paramDefinitions,
     },
     {
-      header: 'Examples',
+      header: "Examples",
       content: [
         {
-          desc: '1. A concise example.',
+          desc: "1. A concise example.",
           example:
-            '$ node scripts/release/yourScript [bold]{-v} [underline]{0.0.1}'
-        }
-      ]
-    }
-  ])
+            "$ node scripts/release/yourScript [bold]{-v} [underline]{0.0.1}",
+        },
+      ],
+    },
+  ]);
 
 const parseParameters = async (
   paramDefinitions = [],
   validateParameters = () => {}
 ) => {
-  const cmdParams = commandLineArgs(paramDefinitions)
+  const cmdParams = commandLineArgs(paramDefinitions);
 
-  validateParameters(cmdParams)
+  validateParameters(cmdParams);
 
-  const secretParams = loadSecretParams(cmdParams.env)
+  const secretParams = loadSecretParams(cmdParams.env);
 
   return {
     ...cmdParams,
-    ...secretParams
-  }
-}
+    ...secretParams,
+  };
+};
 
 const runYarnTask = async (task, errorMessage, envVars = {}) => {
-  const rootDir = path.resolve(__dirname, '../..')
+  const rootDir = path.resolve(__dirname, "../..");
   try {
-    await exec(`${toEnv(envVars)} yarn run ${task}`, { cwd: rootDir })
+    await exec(`${toEnv(envVars)} yarn run ${task}`, { cwd: rootDir });
   } catch (error) {
     throw Error(
       chalk`
@@ -109,72 +109,72 @@ const runYarnTask = async (task, errorMessage, envVars = {}) => {
 
       {white ${error.stdout || error}}
     `
-    )
+    );
   }
-}
+};
 
-const specialVersions = ['master']
+const specialVersions = ["master"];
 
 const validateVersion = async ({ version }) => {
   if (specialVersions.includes(version)) {
-    return true
+    return true;
   }
 
   if (!semver.valid(version)) {
-    throw Error('Invalid version specified')
+    throw Error("Invalid version specified");
   }
 
-  const rootPackage = await readJson(PACKAGE_PATH)
+  const rootPackage = await readJson(PACKAGE_PATH);
 
   if (!semver.gte(version, rootPackage.version)) {
     throw Error(
       chalk`Version {white ${rootPackage.version}} was already published`
-    )
+    );
   }
 
-  return true
-}
+  return true;
+};
 
 const handleError = (error) => {
-  logUpdate.clear()
-  const message = error.message.trim().replace(/\n +/g, '\n')
-  const stack = error.stack.replace(error.message, '')
+  logUpdate.clear();
+  const message = error.message.trim().replace(/\n +/g, "\n");
+  const stack = error.stack.replace(error.message, "");
 
   console.warn(
-    `${chalk.bgRed.white(' ERROR ')} ${chalk.red(message)}\n\n${chalk.gray(
+    `${chalk.bgRed.white(" ERROR ")} ${chalk.red(message)}\n\n${chalk.gray(
       stack
     )}`
-  )
+  );
 
-  process.exit(1)
-}
+  process.exit(1);
+};
 
 const execAndIgnoreError = async (command, options) => {
   try {
-    return await exec(command, options)
+    return await exec(command, options);
   } catch (error) {
-    console.warn(error.message)
+    console.warn(error.message);
   }
-}
+};
 
 const loadSecretParams = (env) => {
-  const baseFile = __dirname + '/.env'
-  const dotenvFiles = [`${baseFile}.${env}`, baseFile]
+  const baseFile = __dirname + "/.env";
+  const dotenvFiles = [`${baseFile}.${env}`, baseFile];
   dotenvFiles.forEach((path) => {
-    require('dotenv-expand')(
-      require('dotenv').config({
-        path
+    require("dotenv-expand")(
+      require("dotenv").config({
+        path,
       })
-    )
-  })
+    );
+  });
 
-  const { GITHUB_API_KEY, NETLIFY_SITE_ID, NETLIFY_AUTH_TOKEN } = process.env
+  const { GITHUB_API_KEY, NETLIFY_SITE_ID, NETLIFY_AUTH_TOKEN } = process.env;
   return {
     GITHUB_API_KEY,
     NETLIFY_SITE_ID,
-    NETLIFY_AUTH_TOKEN
-  }
-}
+    NETLIFY_AUTH_TOKEN,
+  };
+};
 
 module.exports = {
   RELEASE_SCRIPT_PATH,
@@ -188,5 +188,5 @@ module.exports = {
   handleError,
   execAndIgnoreError,
   loadSecretParams,
-  getUsage
-}
+  getUsage,
+};
