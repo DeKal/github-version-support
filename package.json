@@ -1,6 +1,19 @@
 {
-  "private": true,
+  "name": "github-version-support",
+  "version": "0.0.1",
+  "description": "Support to release tag and version using github action",
+  "main": "index.js",
+  "keywords": [],
+  "author": "DeKal",
+  "license": "MIT",
+  "scripts": {
+    "format:check": "prettier --check *.js",
+    "format": "prettier --write *.js",
+    "build": "ncc build index.js -o dist"
+  },
   "dependencies": {
+    "@actions/core": "^1.2.6",
+    "actions-toolkit": "^6.0.1",
     "chalk": "^4.1.0",
     "child-process-promise": "^2.2.1",
     "cli-spinners": "^2.4.0",
@@ -15,5 +28,9 @@
     "log-update": "^4.0.0",
     "node-fetch": "^2.6.1",
     "semver": "^7.3.2"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.22.3",
+    "prettier": "^2.2.1"
   }
 }
