@@ -49,7 +49,7 @@ const generateChangelog = async ({ GITHUB_API_KEY }) => {
   // generate from the first version
   await logPromise(
     exec(
-      `GITHUB_AUTH=${GITHUB_API_KEY} ${LERNA_CHANGELOG_BIN} --tag-from v0.0.1 > ../../CHANGELOG.md`,
+      `GITHUB_AUTH=${GITHUB_API_KEY} ${LERNA_CHANGELOG_BIN} --tag-from v0.0.1 > ./CHANGELOG.md`,
       {
         cwd: RELEASE_SCRIPT_PATH
       }
@@ -95,7 +95,7 @@ const paramDefinitions = [
   }
 ]
 
-const run = async () => {
+const createNewVersion = async () => {
   try {
     const params = await parseParameters(paramDefinitions, validateParameters)
 
@@ -111,4 +111,4 @@ const run = async () => {
   }
 }
 
-run()
+module.exports = createNewVersion

@@ -26,7 +26,7 @@ const COMMIT_PARAMETERS = [
   }
 ]
 
-const run = async () => {
+const commitVersion = async () => {
   try {
     const params = await parseParameters(COMMIT_PARAMETERS)
     await validateVersion(params)
@@ -36,4 +36,4 @@ const run = async () => {
   }
 }
 
-run()
+module.exports = commitVersion
