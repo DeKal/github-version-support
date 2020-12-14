@@ -58,20 +58,6 @@ const generateChangelog = async ({ GITHUB_API_KEY }) => {
   )
 }
 
-const triggerBuild = async ({ NETLIFY_AUTH_TOKEN }) => {
-  await logPromise(
-    exec(`NETLIFY_AUTH_TOKEN=${NETLIFY_AUTH_TOKEN} yarn netlify-build`),
-    'Trigger Build for netlify'
-  )
-}
-
-const triggerDeploy = async ({ NETLIFY_AUTH_TOKEN }) => {
-  await logPromise(
-    exec(`NETLIFY_AUTH_TOKEN=${NETLIFY_AUTH_TOKEN} yarn netlify-deploy`),
-    'Trigger Deploy for netlify'
-  )
-}
-
 const tagVersion = async ({ version }) => {
   const tagName = 'v' + version
   await execAndIgnoreError(`git tag --delete ${tagName}`)
@@ -118,10 +104,6 @@ const run = async () => {
     await runTests(params)
     await tagVersion(params)
     await updatePackageVersion(params)
-
-    await triggerBuild(params)
-    await triggerDeploy(params)
-
     await generateChangelog(params)
     printSummary(params)
   } catch (error) {

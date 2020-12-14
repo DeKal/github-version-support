@@ -57,10 +57,6 @@ const toEnv = (envVars) =>
     .map((key) => `${key}="${envVars[key]}"`)
     .join(' ')
 
-const extractCountry = (app) => app.split('_')[1].toLowerCase()
-
-const extractLanguage = (app) => app.split('_')[0].toLowerCase()
-
 const getUsage = (paramDefinitions) =>
   commandLineUsage([
     {
@@ -96,14 +92,9 @@ const parseParameters = async (
 
   const secretParams = loadSecretParams(cmdParams.env)
 
-  const country = cmdParams.app ? extractCountry(cmdParams.app) : null
-
-  const language = cmdParams.app ? extractLanguage(cmdParams.app) : null
   return {
     ...cmdParams,
-    ...secretParams,
-    country,
-    language
+    ...secretParams
   }
 }
 
