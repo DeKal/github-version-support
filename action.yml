@@ -1,0 +1,17 @@
+name: GitHub - Version - Support
+description: Support to release tag and version using github action
+author: DeKal
+
+inputs:
+  VERSION:
+    description: 'Your GitHub username'
+    default: ${{ github.repository_owner }}
+    required: false
+
+branding:
+  color: yellow
+  icon: activity
+
+runs:
+  using: node12
+  main: dist/index.js
